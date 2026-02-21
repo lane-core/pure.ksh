@@ -10,25 +10,24 @@
 # $2 = TTL in seconds
 # Returns 0 if fresh, 1 if stale or missing
 function _pure_cache_fresh {
-    typeset file=$1
-    typeset -i ttl=$2
+    typeset file=${1:-}
+    typeset -i ttl=${2:-0}
 
-    [[ -f $file ]] || return 1
+    [[ -n $file && -f $file ]] || return 1
 
-    # Get file age via ksh93's stat-like test
-    # We compare file mtime against current SECONDS offset
-    # Since SECONDS is a float timer, we use a cached birth time
+    # Compare file mtime against a reference file aged $ttl seconds.
+    # Avoids stat(1) entirely — ksh93u+m has a stat builtin whose
+    # named parameters trigger spurious nounset errors when invoked
+    # via `command stat -f ...` (command doesn't bypass builtins).
+    # Instead: printf %(...)T (builtin) + touch -t (POSIX) + [[ -nt ]]
     typeset -i now=${EPOCHSECONDS:-$(printf '%(%s)T')}
-    typeset -i mtime
+    typeset -i threshold=$(( now - ttl ))
+    typeset ts
+    ts=$(printf '%(%Y%m%d%H%M.%S)T' "#$threshold")
+    typeset ref="${_PURE_CACHE_DIR:-/tmp}/.ttl_ref"
 
-    # ksh93u+m: use printf for epoch time of file
-    # Portable fallback: stat
-    if mtime=$(command stat -f '%m' "$file" 2>/dev/null) ||
-       mtime=$(command stat -c '%Y' "$file" 2>/dev/null); then
-        (( now - mtime < ttl )) && return 0
-    fi
-
-    return 1
+    touch -t "$ts" "$ref" 2>/dev/null || return 1
+    [[ "$file" -nt "$ref" ]]
 }
 
 # Initialize cache directory
