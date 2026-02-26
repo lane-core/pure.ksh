@@ -139,7 +139,9 @@ function _pure_ps1.get {
     fi
     _pure_precmd
     _pure_render "$_PURE_LAST_STATUS"
-    .sh.value=$REPLY
+    # Escape ! → !! so ksh93's PS1 history-number expansion
+    # doesn't mangle the prompt (e.g. +9!49 → +944649)
+    .sh.value=${REPLY//'!'/'!!'}
 }
 
 trap '_pure_preexec' DEBUG
