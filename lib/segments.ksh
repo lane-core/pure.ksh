@@ -162,7 +162,7 @@ function _pure_seg_git_action {
 
 # Execution time: shown when last command took > threshold
 function _pure_seg_exectime {
-    typeset -i threshold=${PURE_CMD_MAX_EXEC_TIME:-5}
+    typeset -i threshold=${PURE.cmd_max_exec_time:-5}
     typeset -i total=${_PURE_CMD_DURATION%.*}
 
     (( total < threshold )) && return 0
@@ -202,7 +202,7 @@ function _pure_render_preprompt {
 # $1 = last exit status
 function _pure_render_symbol {
     typeset -i last=${1:-0}
-    typeset sym=${PURE_PROMPT_SYMBOL:-❯}
+    typeset sym=${PURE.prompt_symbol:-❯}
 
     if (( last == 0 )); then
         REPLY="${_PC_MAGENTA}${sym}${_PC_RESET}"

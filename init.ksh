@@ -11,12 +11,12 @@
 #   . /path/to/func.ksh/init.ksh
 #   . /path/to/pure.ksh/init.ksh
 #
-# Configuration (set before sourcing):
-#   PURE_CMD_MAX_EXEC_TIME=5      # seconds threshold for exec time display
-#   PURE_GIT_UNTRACKED_DIRTY=1    # include untracked files in dirty check
-#   PURE_GIT_ASYNC_TTL=30         # seconds before git cache expires
-#   PURE_LANG_ASYNC_TTL=300       # seconds before lang version cache expires
-#   PURE_PROMPT_SYMBOL='❯'        # prompt character
+# Configuration (set PURE compound before sourcing, or ~/.config/ksh/pure.ksh):
+#   PURE.cmd_max_exec_time=5      # seconds threshold for exec time display
+#   PURE.git_untracked_dirty=true  # include untracked files in dirty check
+#   PURE.git_async_ttl=30         # seconds before git cache expires
+#   PURE.lang_async_ttl=300       # seconds before lang version cache expires
+#   PURE.prompt_symbol='❯'        # prompt character
 
 # Guard against double-sourcing
 [[ -n ${_PURE_KSH_INIT:-} ]] && return 0
@@ -29,6 +29,21 @@ fi
 
 # -- Resolve root --------------------------------------------------------------
 _PURE_ROOT=${.sh.file%/*}
+
+# -- Read user config ----------------------------------------------------------
+if [[ -z "${PURE+set}" ]]; then
+    typeset -C PURE=(
+        cmd_max_exec_time=5
+        git_untracked_dirty=true
+        git_async_ttl=30
+        lang_async_ttl=300
+        prompt_symbol='❯'
+    )
+fi
+
+typeset _pure_config="${XDG_CONFIG_HOME:-$HOME/.config}/ksh/pure.ksh"
+[[ -f "$_pure_config" ]] && . "$_pure_config"
+unset _pure_config
 
 # -- Source libraries (order matters: cache first, git/detect depend on it) ----
 for _pure_lib in cache git detect segments; do
@@ -115,9 +130,13 @@ function _pure_precmd {
 typeset _pure_ps1
 
 function _pure_ps1.get {
-    # Capture $? here — the discipline fires in the parent shell
-    # after the last foreground command, so $? is correct and fresh.
-    _PURE_LAST_STATUS=$?
+    # Capture exit status. If hist.ksh is loaded, its PS1 discipline
+    # fires first and clobbers $? — use its captured value instead.
+    if [[ -n "${_HIST_LAST_EXIT+set}" ]]; then
+        _PURE_LAST_STATUS=$_HIST_LAST_EXIT
+    else
+        _PURE_LAST_STATUS=$?
+    fi
     _pure_precmd
     _pure_render "$_PURE_LAST_STATUS"
     .sh.value=$REPLY

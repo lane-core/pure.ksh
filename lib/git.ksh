@@ -170,13 +170,13 @@ function _pure_git_refresh {
     typeset status_cache="${_PURE_CACHE_DIR}/git_status"
     typeset remote_cache="${_PURE_CACHE_DIR}/git_remote"
 
-    if _pure_cache_fresh "$status_cache" "${PURE_GIT_ASYNC_TTL:-30}"; then
+    if _pure_cache_fresh "$status_cache" "${PURE.git_async_ttl:-30}"; then
         _PURE_GIT_STATUS=$(< "$status_cache")
     else
         defer -k git_status _PURE_GIT_STATUS_FUT _pure_git_status_gather
     fi
 
-    if _pure_cache_fresh "$remote_cache" "${PURE_GIT_ASYNC_TTL:-30}"; then
+    if _pure_cache_fresh "$remote_cache" "${PURE.git_async_ttl:-30}"; then
         _PURE_GIT_REMOTE=$(< "$remote_cache")
     else
         defer -k git_remote _PURE_GIT_REMOTE_FUT _pure_git_remote_gather

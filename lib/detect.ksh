@@ -92,7 +92,7 @@ function _pure_lang_refresh {
         cache_file="${_PURE_CACHE_DIR}/lang_${name}"
 
         if _pure_lang_triggered "$i"; then
-            if _pure_cache_fresh "$cache_file" "${PURE_LANG_ASYNC_TTL:-300}"; then
+            if _pure_cache_fresh "$cache_file" "${PURE.lang_async_ttl:-300}"; then
                 _PURE_LANG_VERSIONS[$i]=$(< "$cache_file")
             else
                 # Defer version detection to background
