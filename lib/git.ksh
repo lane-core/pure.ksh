@@ -156,6 +156,16 @@ function _pure_git_refresh {
         return 0
     fi
 
+    # Repo changed — clear stale in-memory state and caches
+    if [[ "$toplevel" != "$_PURE_GIT_TOPLEVEL" ]]; then
+        _PURE_GIT_STATUS=''
+        _PURE_GIT_REMOTE=''
+        _PURE_GIT_DIRTY=0
+        _PURE_GIT_STATUS_FUT.reset
+        _PURE_GIT_REMOTE_FUT.reset
+        rm -f "${_PURE_CACHE_DIR}/git_status" "${_PURE_CACHE_DIR}/git_remote" 2>/dev/null
+    fi
+
     _PURE_GIT_TOPLEVEL=$toplevel
     # Cache git-dir for _pure_git_action (avoids extra fork)
     _PURE_GIT_DIR=$(command git rev-parse --git-dir 2>/dev/null)
@@ -181,9 +191,6 @@ function _pure_git_refresh {
     else
         defer -k git_remote _PURE_GIT_REMOTE_FUT _pure_git_remote_gather
     fi
-
-    # Try to collect completed futures from previous prompt cycles
-    _pure_git_collect
 }
 
 # -- Collect completed futures -------------------------------------------------

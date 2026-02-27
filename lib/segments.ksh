@@ -89,7 +89,8 @@ function _pure_seg_lang {
 
         name=${_PURE_LANG_NAMES[$i]}
         # Map language index to color
-        typeset color_code=${_PURE_LANG_COLORS[$i]}
+        typeset color_code
+        color_code=${_PURE_LANG_COLORS[$i]}
         color=$'\033[38;5;'"${color_code}m"
 
         _pure_append "$color" "${name}:${ver}"

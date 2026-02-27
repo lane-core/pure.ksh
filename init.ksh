@@ -108,11 +108,13 @@ function _pure_precmd {
     # Calculate command duration
     _PURE_CMD_DURATION=$(( SECONDS - _PURE_CMD_START ))
 
-    # Detect directory change → refresh lang detection, clear stale cache
+    # Detect directory change → refresh lang detection
     if [[ $PWD != "$_PURE_LAST_PWD" ]]; then
         _PURE_LAST_PWD=$PWD
         _pure_lang_refresh
-        _pure_cache_clear
+        # Only clear lang caches on dir change — git caches are gated
+        # on toplevel change inside _pure_git_refresh
+        rm -f "${_PURE_CACHE_DIR}"/lang_* 2>/dev/null
     fi
 
     # Refresh git info (fast ops sync, slow ops deferred)

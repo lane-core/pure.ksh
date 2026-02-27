@@ -111,10 +111,6 @@ function _pure_lang_collect {
     Result_t _plc_r
 
     for (( i = 0; i < n; i++ )); do
-        typeset -n _fut="_PURE_LANG_FUT_${i}"
-        # Skip if no future exists or not a valid variable
-        [[ ${_fut.status:-empty} == empty ]] && continue
-
         if poll "_PURE_LANG_FUT_${i}"; then
             name=${_PURE_LANG_NAMES[$i]}
             await _plc_r "_PURE_LANG_FUT_${i}"
