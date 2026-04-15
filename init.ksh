@@ -42,6 +42,10 @@ typeset _py=$'\033[38;5;3m'
 # -- State ---------------------------------------------------------------------
 typeset -F _pstart=0 _pdur=0
 typeset -i _pstat=0 _peuid=${EUID:-0}
+typeset _p_host=${HOSTNAME:-}
+[[ -z $_p_host ]] && _p_host=$(command hostname 2>/dev/null)
+[[ -z $_p_host ]] && _p_host=$(command uname -n 2>/dev/null)
+[[ -z $_p_host ]] && _p_host='localhost'
 
 # Git state
 typeset _PURE_GIT_TOPLEVEL=''
@@ -198,7 +202,7 @@ function _pure_jobs {
 
 function _pure_uh {
 	if (( _peuid == 0 )) || [[ -n ${SSH_CONNECTION:-}${SSH_CLIENT:-}${SSH_TTY:-} || -n ${container:-} || -f /.dockerenv ]]; then
-		_pure_append "$_pg" "${USER:-root}@${HOSTNAME%%.*}"
+		_pure_append "$_pg" "${USER:-root}@${_p_host%%.*}"
 	fi
 }
 
