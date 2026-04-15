@@ -221,7 +221,12 @@ function _pure_jobs {
 }
 
 function _pure_uh {
-	if (( _peuid == 0 )) || [[ -n ${SSH_CONNECTION:-}${SSH_CLIENT:-}${SSH_TTY:-} || -n ${container:-} || -f /.dockerenv ]]; then
+	[[ -n ${SSH_CONNECTION:-}${SSH_CLIENT:-}${SSH_TTY:-} ]] || return 0
+
+	if (( _peuid == 0 )); then
+		[[ -n $REPLY ]] && REPLY+=' '
+		REPLY+="${_pred}${USER:-root}${_pg}@${_p_host%%.*}${_pr}"
+	else
 		_pure_append "$_pg" "${USER:-root}@${_p_host%%.*}"
 	fi
 }
