@@ -31,13 +31,33 @@ function _pure_cache_fresh {
 }
 
 # -- Colors --------------------------------------------------------------------
-typeset _pr=$'\033[0m'
-typeset _pb=$'\033[38;5;4m'
-typeset _pg=$'\033[38;5;242m'
-typeset _pm=$'\033[38;5;5m'
-typeset _pred=$'\033[38;5;1m'
-typeset _pc=$'\033[38;5;6m'
-typeset _py=$'\033[38;5;3m'
+# Detect 256-color support; fall back to 16-color ANSI for basic terminals.
+typeset -i _p_has256=0
+if [[ ${TERM:-} == *256color* || ${TERM:-} == *256* ]]; then
+	_p_has256=1
+elif command -v tput >/dev/null 2>&1; then
+	typeset _p_tput_colors
+	_p_tput_colors=$(command tput colors 2>/dev/null) || _p_tput_colors=0
+	(( _p_tput_colors >= 256 )) && _p_has256=1
+fi
+
+if (( _p_has256 )); then
+	typeset _pr=$'\033[0m'
+	typeset _pb=$'\033[38;5;4m'
+	typeset _pg=$'\033[38;5;242m'
+	typeset _pm=$'\033[38;5;5m'
+	typeset _pred=$'\033[38;5;1m'
+	typeset _pc=$'\033[38;5;6m'
+	typeset _py=$'\033[38;5;3m'
+else
+	typeset _pr=$'\033[0m'
+	typeset _pb=$'\033[34m'
+	typeset _pg=$'\033[37m'
+	typeset _pm=$'\033[35m'
+	typeset _pred=$'\033[31m'
+	typeset _pc=$'\033[36m'
+	typeset _py=$'\033[33m'
+fi
 
 # -- State ---------------------------------------------------------------------
 typeset -F _pstart=0 _pdur=0
