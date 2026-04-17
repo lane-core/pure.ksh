@@ -49,7 +49,7 @@ _pure_startup_cleanup
 function _pure_cache_fresh {
 	typeset file=$1 ttl=${2:-5}
 	[[ -f ${file}.ts ]] || return 1
-	typeset -i now=${EPOCHSECONDS:-$(printf '%(%s)T')} mtime
+	typeset -i now=${EPOCHSECONDS} mtime
 	mtime=$(< "${file}.ts")
 	(( now - mtime <= ttl ))
 }
@@ -101,6 +101,7 @@ typeset _PURE_LAST_PWD=''
 
 # Git state
 typeset _PURE_GIT_TOPLEVEL=''
+typeset _PURE_GIT_DIR=''
 typeset _PURE_GIT_BRANCH=''
 typeset _PURE_GIT_ACTION=''
 typeset -i _PURE_GIT_STASH=0
@@ -157,7 +158,15 @@ function _pure_git_refresh {
 
 	# Sync: action
 	typeset gd
-	gd=$(command git rev-parse --git-dir 2>/dev/null)
+	if [[ -n $_PURE_GIT_DIR && $PWD == "$_PURE_LAST_PWD" ]]; then
+		gd=$_PURE_GIT_DIR
+	elif [[ -d "$toplevel/.git" ]]; then
+		gd="$toplevel/.git"
+		_PURE_GIT_DIR=$gd
+	else
+		gd=$(command git rev-parse --git-dir 2>/dev/null)
+		_PURE_GIT_DIR=$gd
+	fi
 	_PURE_GIT_ACTION=''
 	if [[ -d $gd/rebase-merge ]]; then
 		[[ -f $gd/rebase-merge/interactive ]] && _PURE_GIT_ACTION='rebase-i' || _PURE_GIT_ACTION='rebase-m'
